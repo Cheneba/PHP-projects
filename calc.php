@@ -8,28 +8,31 @@ define('MULTIPLY', '*');
 define('BRACKET_OPEN', '(');
 define('BRACKET_CLOSE', ')');
 define('OF', 'of');
+$op_arr = array(DIVIDE, MULTIPLY, ADD, SUBTRACT);
 
 // Executes the string and returns the result in string form
 function run($arr, $string)
 {
+    global $op_arr;
+
     // completely replaces the "of" with *
     $string = str_replace(OF, '*', $string);
 
 
     // Calculates and resolves anything that has to do with [+, -, /, *]
-    $op_arr = array(DIVIDE, MULTIPLY, ADD, SUBTRACT);
-    for ($i = 0; $i < 5; $i++) {
+    for ($i = 0; $i < 4; $i++) {
         $operator = find_operator($arr, $op_arr[$i]);           // Gets the index of an operator if present
+
 
         if ($operator) {
             $output = '';
+
             foreach ($operator as $op) {
-                $result = number_format(execute($op_arr[$i], [$string[$op - 1], $string[$op + 1]]));            // executes the operator and creates output string
-                $output = substr($string, 0, $op - 1) . $result . substr($string, $op + 2, strlen($string) - 1 === $op + 2 ? 0 : strlen($string) - 1);
+                $output = t($string, $op, $i);
             }
-            $string = $output;
-            $arr = str_split($string, 1);
+            [$string,  $arr] = [$output, str_split($string, 1)];
         } else continue;
+        // var_dump($string);
     }
     return $string;
 }
@@ -38,15 +41,13 @@ function run($arr, $string)
 function execute($operator, $value)
 {
     if ($operator === DIVIDE) {
-        return $value[0] / $value[1];
+        return (float)$value[0] / (float)$value[1];
     } elseif ($operator === MULTIPLY) {
-        return $value[0] * $value[1];
-    }
-    if ($operator === ADD) {
-        return $value[0] + $value[1];
-    }
-    if ($operator === SUBTRACT) {
-        return $value[0] - $value[1];
+        return (float)$value[0] * (float)$value[1];
+    } elseif ($operator === ADD) {
+        return (float)$value[0] + (float)$value[1];
+    } elseif ($operator === SUBTRACT) {
+        return (float)$value[0] - (float)$value[1];
     }
 }
 
@@ -63,13 +64,52 @@ function find_operator($string, $op)
     else return null;
 }
 
-$calc = trim(fgets(STDIN)) ?: "6+2*3-4/2";
+
+function t($string, $operator_index, $op_arr_index)
+{
+    global $op_arr;
+    $str = $string;
+    $string = str_replace(['*', '/', '+', '-', ')', '('], '@', $string,);
+    $string_arr = str_split($string, 1);
+
+    $left_side = function ($s_arr, $op_index) {
+        $result = '';
+        for ($i = $op_index - 1; $i >= 0; $i--) {
+            if ($s_arr[$i] === '@') break;
+            $result .= $s_arr[$i];
+        }
+        $result = strrev($result); // Reverse the result string
+        return [$result, $op_index - $i - 1];
+    };
+
+
+    $right_side = function ($s_arr, $op_index, $op_arr, $op_arr_index) {
+        $result = '';
+        for ($i = $op_index + 1; $i < count($s_arr); $i++) {     //make and implement to check whether there is an operator at the start or end of the string
+            if ($s_arr[$i] === '@') break;
+            $result .= $s_arr[$i];
+        }
+        return [$result, $i];
+    };
+    $num1 = $left_side($string_arr, $operator_index);
+    $num2 = $right_side($string_arr, $operator_index, $op_arr, $op_arr_index);
+
+    if ($op_arr[$op_arr_index] == '-') {                                //Come and continue here ====================================================================
+        var_dump($string, $num1[0], $num2[0]);
+        exit();
+    }
+    $answer = execute($op_arr[$op_arr_index], [$num1[0], $num2[0]]);
+
+    $new_string = substr($str, 0, $operator_index - $num1[1]) . $answer . substr($str, $num2[1], strlen($str) - 1);
+    return $new_string;
+}
+
+$calc = trim(fgets(STDIN)) ?: "6+12*453-4/2";
 
 $split = str_split($calc, 1);
 
 
-var_dump(run($split, $calc));
-
+run($split, $calc);
 
 
 echo "\n";
