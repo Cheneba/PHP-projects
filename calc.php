@@ -30,9 +30,9 @@ function run($arr, $string)
             foreach ($operator as $op) {
                 $output = t($string, $op, $i);
             }
-            [$string,  $arr] = [$output, str_split($string, 1)];
+            $string =  $output;
+            $arr = str_split($string, 1);
         } else continue;
-        // var_dump($string);
     }
     return $string;
 }
@@ -72,7 +72,7 @@ function t($string, $operator_index, $op_arr_index)
     $string = str_replace(['*', '/', '+', '-', ')', '('], '@', $string,);
     $string_arr = str_split($string, 1);
 
-    $left_side = function ($s_arr, $op_index) {
+    $left_side = function ($s_arr, $op_index, $op_arr, $op_arr_index) {
         $result = '';
         for ($i = $op_index - 1; $i >= 0; $i--) {
             if ($s_arr[$i] === '@') break;
@@ -91,13 +91,9 @@ function t($string, $operator_index, $op_arr_index)
         }
         return [$result, $i];
     };
-    $num1 = $left_side($string_arr, $operator_index);
+    $num1 = $left_side($string_arr, $operator_index, $op_arr, $op_arr_index);
     $num2 = $right_side($string_arr, $operator_index, $op_arr, $op_arr_index);
 
-    if ($op_arr[$op_arr_index] == '-') {                                //Come and continue here ====================================================================
-        var_dump($string, $num1[0], $num2[0]);
-        exit();
-    }
     $answer = execute($op_arr[$op_arr_index], [$num1[0], $num2[0]]);
 
     $new_string = substr($str, 0, $operator_index - $num1[1]) . $answer . substr($str, $num2[1], strlen($str) - 1);
@@ -109,7 +105,7 @@ $calc = trim(fgets(STDIN)) ?: "6+12*453-4/2";
 $split = str_split($calc, 1);
 
 
-run($split, $calc);
-
+$response = run($split, $calc);
+var_dump($response);
 
 echo "\n";
