@@ -113,7 +113,7 @@ function find_operator($string, $op)
     else return null;
 }
 
-$calc = trim(fgets(STDIN)) ?: "5/3*8";
+$calc = trim(fgets(STDIN)) ?: "6+2*3-4/2";
 
 $split = str_split($calc, 1);
 
