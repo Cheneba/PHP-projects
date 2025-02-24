@@ -28,7 +28,7 @@ function run($arr, $string)
             $output = '';
 
             foreach ($operator as $op) {
-                $output = t($string, $op, $i);
+                $output = runOperation($string, $op, $i);
             }
             $string =  $output;
             $arr = str_split($string, 1);
@@ -65,34 +65,34 @@ function find_operator($string, $op)
 }
 
 
-function t($string, $operator_index, $op_arr_index)
+function runOperation($string, $operator_index, $op_arr_index)
 {
     global $op_arr;
     $str = $string;
     $string = str_replace(['*', '/', '+', '-', ')', '('], '@', $string,);
     $string_arr = str_split($string, 1);
 
-    $left_side = function ($s_arr, $op_index, $op_arr, $op_arr_index) {
+    $left_side = function () use ($string_arr, $operator_index) {
         $result = '';
-        for ($i = $op_index - 1; $i >= 0; $i--) {
-            if ($s_arr[$i] === '@') break;
-            $result .= $s_arr[$i];
+        for ($i = $operator_index - 1; $i >= 0; $i--) {
+            if ($string_arr[$i] === '@') break;
+            else $result .= $string_arr[$i];
         }
         $result = strrev($result); // Reverse the result string
-        return [$result, $op_index - $i - 1];
+        return [$result, $operator_index - $i - 1];
     };
 
 
-    $right_side = function ($s_arr, $op_index, $op_arr, $op_arr_index) {
+    $right_side = function () use ($string_arr, $operator_index) {
         $result = '';
-        for ($i = $op_index + 1; $i < count($s_arr); $i++) {     //make and implement to check whether there is an operator at the start or end of the string
-            if ($s_arr[$i] === '@') break;
-            $result .= $s_arr[$i];
+        for ($i = $operator_index + 1; $i < count($string_arr); $i++) {     //make and implement to check whether there is an operator at the start or end of the string
+            if ($string_arr[$i] === '@') break;
+            else $result .= $string_arr[$i];
         }
         return [$result, $i];
     };
-    $num1 = $left_side($string_arr, $operator_index, $op_arr, $op_arr_index);
-    $num2 = $right_side($string_arr, $operator_index, $op_arr, $op_arr_index);
+    $num1 = $left_side();
+    $num2 = $right_side();
 
     $answer = execute($op_arr[$op_arr_index], [$num1[0], $num2[0]]);
 
@@ -100,12 +100,14 @@ function t($string, $operator_index, $op_arr_index)
     return $new_string;
 }
 
-$calc = trim(fgets(STDIN)) ?: "6+12*453-4/2";
 
-$split = str_split($calc, 1);
+while (true) {
+    // Gets input
+    $input = $in = trim(fgets(STDIN)) ? (printf("Entered: %s\n", $in) ? $in : "Error: Try again!\n") : (printf("None entered!\nExecuting default: 6+1*5-4/2\n") ? "6+1*5-4/2" : "Error try again");
+    $arr_input = str_split($input, 1);
 
 
-$response = run($split, $calc);
-var_dump($response);
-
-echo "\n";
+    // Prints result
+    $result = run($arr_input, $input);
+    printf("Result: %.2f \n", (float)$result);
+}
