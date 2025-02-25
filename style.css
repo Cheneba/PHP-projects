@@ -1,1 +1,8 @@
-Hello World
+*{
+   padding: 0;
+   margin: 0;
+}
+body{
+   font-family: sans serif;
+   box-sizing: border-content;
+}
